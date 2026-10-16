@@ -221,6 +221,106 @@
       font-size: 0.95rem;
     }
   </style>
+
+  <script>
+    let selectedText = [];
+
+    function toggleOption(btn) {
+      const text = btn.getAttribute('data-text');
+      if (btn.classList.contains('selected')) {
+        btn.classList.remove('selected');
+        selectedText = selectedText.filter(t => t !== text);
+      } else {
+        if (selectedText.length < 3) {
+          btn.classList.add('selected');
+          selectedText.push(text);
+        }
+      }
+    }
+
+    function goToStep(stepNum) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById(`step-${stepNum}`).classList.add('active');
+    }
+
+    function playChimeSound() {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const now = audioCtx.currentTime;
+      
+      const freqs = [523.25, 659.25, 783.99]; 
+      freqs.forEach((f, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, now + (i * 0.08));
+        
+        gain.gain.setValueAtTime(0.2, now + (i * 0.08));
+        gain.gain.exponentialRampToValueAtTime(0.001, now + (i * 0.08) + 0.5);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start(now + (i * 0.08));
+        osc.stop(now + (i * 0.08) + 0.5);
+      });
+    }
+
+    function startFullAudioSession() {
+      if (selectedText.length === 0) {
+        selectedText = [
+          "getting lunch with friends",
+          "enjoying an afternoon coffee break"
+        ];
+      }
+
+      goToStep(3);
+
+      const scriptText = `Close your eyes and breathe slowly. Picture yourself enjoying your ideal peaceful Saturday afternoon. You are experiencing ${selectedText.join(', and then ')}. Everything feels completely quiet, peaceful, and entirely under your control...`;
+
+      const synth = window.speechSynthesis;
+      synth.cancel(); 
+
+      const utterance = new SpeechSynthesisUtterance(scriptText);
+      utterance.rate = 0.75;
+
+      utterance.onend = function() {
+        playChimeSound();
+
+        setTimeout(() => {
+          const penguinSpeech = new SpeechSynthesisUtterance("Penguin!");
+          penguinSpeech.rate = 1.1;
+          
+          penguinSpeech.onend = function() {
+            setTimeout(() => {
+              const openEyesSpeech = new SpeechSynthesisUtterance("Open your eyes!");
+              openEyesSpeech.rate = 1.0;
+              synth.speak(openEyesSpeech);
+
+              document.getElementById('penguin-overlay').classList.add('show');
+            }, 5000);
+          };
+
+          synth.speak(penguinSpeech);
+        }, 300);
+      };
+
+      synth.speak(utterance);
+    }
+
+    function triggerTrap(choice) {
+      window.speechSynthesis.cancel();
+      document.getElementById('penguin-overlay').classList.remove('show');
+      goToStep(4);
+    }
+
+    function submitEmail() {
+      const email = document.getElementById('emailInput').value;
+      if (email) {
+        document.getElementById('thankyou-msg').style.display = 'block';
+        document.getElementById('emailInput').value = '';
+      }
+    }
+  </script>
 </head>
 <body>
 
@@ -324,48 +424,5 @@
 
   </div>
 
-  <script>
-    let selectedText = [];
-
-    function toggleOption(btn) {
-      const text = btn.getAttribute('data-text');
-      if (btn.classList.contains('selected')) {
-        btn.classList.remove('selected');
-        selectedText = selectedText.filter(t => t !== text);
-      } else {
-        if (selectedText.length < 3) {
-          btn.classList.add('selected');
-          selectedText.push(text);
-        }
-      }
-    }
-
-    function goToStep(stepNum) {
-      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-      document.getElementById(`step-${stepNum}`).classList.add('active');
-    }
-
-    function playChimeSound() {
-      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const now = audioCtx.currentTime;
-      
-      const freqs = [523.25, 659.25, 783.99]; // C5, E5, G5 major triad chime
-      freqs.forEach((f, i) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(f, now + (i * 0.08));
-        
-        gain.gain.setValueAtTime(0.2, now + (i * 0.08));
-        gain.gain.exponentialRampToValueAtTime(0.001, now + (i * 0.08) + 0.5);
-        
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        
-        osc.start(now + (i * 0.08));
-        osc.stop(now + (i * 0.08) + 0.5);
-      });
-    }
-
-    function startFullAudioSession() {
-      if (selectedText.length
+</body>
+</html>
