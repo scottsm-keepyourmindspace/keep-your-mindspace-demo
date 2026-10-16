@@ -40,7 +40,6 @@
       width: 100%;
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
       position: relative;
-      overflow: hidden;
     }
 
     .step { display: none; }
@@ -138,11 +137,12 @@
       width: 100%;
       height: 100%;
       background: rgba(15, 23, 42, 0.98);
+      border-radius: 16px;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 24px;
+      padding: 20px;
       text-align: center;
       opacity: 0;
       pointer-events: none;
@@ -156,22 +156,22 @@
     }
 
     .penguin-badge {
-      font-size: 4rem;
-      margin-bottom: 12px;
+      font-size: 3rem;
+      margin-bottom: 6px;
       animation: bounce 0.6s infinite alternate;
     }
 
     @keyframes bounce {
       from { transform: translateY(0); }
-      to { transform: translateY(-12px); }
+      to { transform: translateY(-8px); }
     }
 
     .dark-pattern-box {
       background: #0f172a;
       border: 1px solid #334155;
-      padding: 20px;
+      padding: 16px;
       border-radius: 12px;
-      margin-top: 16px;
+      margin-top: 12px;
       width: 100%;
     }
 
@@ -179,13 +179,13 @@
       background-color: var(--accent-blue);
       color: #0f172a;
       font-weight: bold;
-      padding: 14px;
+      padding: 12px;
       border-radius: 8px;
       border: none;
       width: 100%;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       cursor: pointer;
-      font-size: 1rem;
+      font-size: 0.95rem;
       box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
     }
 
@@ -196,6 +196,8 @@
       font-size: 0.8rem;
       cursor: pointer;
       text-decoration: underline;
+      display: inline-block;
+      padding: 4px 8px;
     }
 
     .breakdown-card {
@@ -284,24 +286,30 @@
       utterance.rate = 0.75;
 
       utterance.onend = function() {
-        playChimeSound();
-
+        // Allow audio engine 500ms to clear completely
         setTimeout(() => {
-          const penguinSpeech = new SpeechSynthesisUtterance("Penguin!");
-          penguinSpeech.rate = 1.1;
-          
-          penguinSpeech.onend = function() {
-            setTimeout(() => {
-              const openEyesSpeech = new SpeechSynthesisUtterance("Open your eyes!");
-              openEyesSpeech.rate = 1.0;
-              synth.speak(openEyesSpeech);
+          playChimeSound();
 
-              document.getElementById('penguin-overlay').classList.add('show');
-            }, 5000);
-          };
+          setTimeout(() => {
+            synth.cancel();
+            const penguinSpeech = new SpeechSynthesisUtterance("Penguin!");
+            penguinSpeech.rate = 1.0;
+            
+            penguinSpeech.onend = function() {
+              // 5 second pause before prompt
+              setTimeout(() => {
+                synth.cancel();
+                const openEyesSpeech = new SpeechSynthesisUtterance("Open your eyes!");
+                openEyesSpeech.rate = 1.0;
+                synth.speak(openEyesSpeech);
 
-          synth.speak(penguinSpeech);
-        }, 300);
+                document.getElementById('penguin-overlay').classList.add('show');
+              }, 5000);
+            };
+
+            synth.speak(penguinSpeech);
+          }, 400);
+        }, 500);
       };
 
       synth.speak(utterance);
@@ -351,7 +359,7 @@
 
     <!-- PAGE 2: Audio Calibration -->
     <div id="step-2" class="step">
-      <h2>Audio Calibration (20 Seconds)</h2>
+      <h2>Audio Calibration</h2>
       <p>This exercise uses personalized audio narration based on your selected activities. Please adjust your volume or put on headphones.</p>
       
       <div style="background: #0f172a; padding: 16px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
@@ -382,10 +390,10 @@
     <div id="penguin-overlay" class="overlay">
       <div class="penguin-badge">🐧</div>
       <h2 style="color: var(--warning-red);">PENGUIN!</h2>
-      <p style="color: #f8fafc;">Your train of thought was just interrupted by an external stimulus.</p>
+      <p style="color: #f8fafc; font-size: 0.9rem;">Your train of thought was just interrupted by an external stimulus.</p>
       
       <div class="dark-pattern-box">
-        <p style="font-size: 0.95rem; margin-bottom: 12px; color: var(--text-main);">Did the penguin join your Saturday afternoon activities? Learn more now.</p>
+        <p style="font-size: 0.9rem; margin-bottom: 12px; color: var(--text-main);">Did the penguin join your Saturday afternoon activities? Learn more now.</p>
         <button class="btn-trick-accept" onclick="triggerTrap('accept')">Accept Recommended Settings & View Analysis</button>
         <button class="btn-trick-decline" onclick="triggerTrap('decline')">No thanks, I prefer losing my focus</button>
       </div>
