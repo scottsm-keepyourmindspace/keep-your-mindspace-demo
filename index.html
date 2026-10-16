@@ -315,7 +315,6 @@
 
       <div style="margin-top: 24px;">
         <h3 style="font-size: 1.1rem; margin-bottom: 8px;">Tech is a Tool</h3>
-        <p style="font-size: 0.9rem; margin-bottom: 12px;">Building digital agency to defend focus in an always-connected world.</p>
         <div class="input-group">
           <input type="email" placeholder="Enter your email for early waitlist access..." id="emailInput">
           <button class="primary-btn" style="width: auto;" onclick="submitEmail()">Keep My Mindspace</button>
@@ -421,12 +420,4 @@
                 const openEyesSpeech = new SpeechSynthesisUtterance("Open your eyes!");
                 if (bestVoice) openEyesSpeech.voice = bestVoice;
                 openEyesSpeech.rate = 1.0;
-                synth.speak(openEyesSpeech);
-
-                document.getElementById('penguin-overlay').classList.add('show');
-              }, 5000);
-            };
-
-            synth.speak(penguinSpeech);
-          }, 400);
-        }, 50
+                synth.speak(openEyesSpeech
