@@ -234,4 +234,199 @@
       <p>Select 2 or 3 activities that best define your ideal peaceful Saturday afternoon:</p>
       
       <div class="options-grid">
-        <button class="option-btn" data-text="getting lunch with friends" onclick="
+        <button class="option-btn" data-text="getting lunch with friends" onclick="toggleOption(this)">
+          🥪 Getting lunch with friends
+        </button>
+        <button class="option-btn" data-text="enjoying an afternoon coffee break" onclick="toggleOption(this)">
+          ☕ Enjoying an afternoon coffee break
+        </button>
+        <button class="option-btn" data-text="an uninterrupted gaming session" onclick="toggleOption(this)">
+          🎮 An uninterrupted gaming session
+        </button>
+        <button class="option-btn" data-text="reading a book in warm sunlight" onclick="toggleOption(this)">
+          📖 Reading a book in warm sunlight
+        </button>
+      </div>
+
+      <button class="primary-btn" onclick="goToStep(2)">Lock In Choices & Calibrate Audio</button>
+    </div>
+
+    <!-- PAGE 2: Audio Calibration -->
+    <div id="step-2" class="step">
+      <h2>Audio Calibration</h2>
+      <p>This exercise uses personalized audio narration based on your selected activities. Please adjust your volume or put on headphones.</p>
+      
+      <div style="background: #0f172a; padding: 16px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
+        <p style="margin-bottom: 12px; font-size: 0.9rem;">Test your audio volume below:</p>
+        <button class="option-btn" style="text-align: center; width: auto; display: inline-block;" onclick="playChimeSound()">🔊 Play Sample Audio Chime</button>
+      </div>
+
+      <p style="font-size: 0.9rem; color: var(--accent-blue);">When ready, click below, close your eyes, and listen to the guided relaxation.</p>
+      <button class="primary-btn" onclick="startFullAudioSession()">I'm Ready — Start Guided Relaxation</button>
+    </div>
+
+    <!-- PAGE 3: Guided Audio Relaxation -->
+    <div id="step-3" class="step">
+      <h2>Close Your Eyes... 🎧</h2>
+      <p>Focus completely on the narration as you visualize your afternoon...</p>
+      
+      <div class="soundwave">
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+        <div class="bar"></div>
+      </div>
+      <p style="font-size: 0.85rem; text-align: center; color: #64748b;">Narration in progress... keep your eyes closed.</p>
+    </div>
+
+    <!-- PENGUIN TEST DISTRACTION OVERLAY -->
+    <div id="penguin-overlay" class="overlay">
+      <div class="penguin-badge">🐧</div>
+      <h2 style="color: var(--warning-red);">PENGUIN!</h2>
+      <p style="color: #f8fafc; font-size: 0.9rem;">Your train of thought was just interrupted by an external stimulus.</p>
+      
+      <div class="dark-pattern-box">
+        <p style="font-size: 0.9rem; margin-bottom: 12px; color: var(--text-main);">Did the penguin join your Saturday afternoon activities? Learn more now.</p>
+        <button class="btn-trick-accept" onclick="triggerTrap('accept')">Learn how you lost your mindspace</button>
+        <button class="btn-trick-decline" onclick="triggerTrap('decline')">No thanks, I prefer losing my mindspace</button>
+      </div>
+    </div>
+
+    <!-- PAGE 4: The Unveil & Keep Your Mindspace CTA -->
+    <div id="step-4" class="step">
+      <h2 style="color: var(--accent-blue);">Keep Your Mindspace.</h2>
+      <p>While your eyes were closed, a sudden audio alert completely broke your peaceful visualization and rerouted your focus.</p>
+
+      <div class="breakdown-card">
+        <h4>1. The Audio Interruption (Penguin Trigger)</h4>
+        <p>A loud, unexpected sound and spoken alert snapped you out of a peaceful state, demonstrating how digital notifications hijack auditory and mental focus in real time.</p>
+      </div>
+
+      <div class="breakdown-card">
+        <h4>2. The Choice Architecture (Manipulative Design)</h4>
+        <p>When you opened your eyes, the primary button used bright glow and high contrast to steer your click, while opting out was hidden behind faded micro-text ("I prefer losing my mindspace").</p>
+      </div>
+
+      <div class="breakdown-card" style="border-left-color: var(--success-green);">
+        <h4>3. Empowering Agency (Your Defense)</h4>
+        <p>Empowering young adults and parents to protect their attention from manipulative digital design.</p>
+      </div>
+
+      <div style="margin-top: 24px;">
+        <h3 style="font-size: 1.1rem; margin-bottom: 8px;">Tech is a Tool</h3>
+        <p style="font-size: 0.9rem; margin-bottom: 12px;">Building digital agency to defend focus in an always-connected world.</p>
+        <div class="input-group">
+          <input type="email" placeholder="Enter your email for early waitlist access..." id="emailInput">
+          <button class="primary-btn" style="width: auto;" onclick="submitEmail()">Keep My Mindspace</button>
+        </div>
+        <p id="thankyou-msg" style="color: var(--success-green); font-size: 0.85rem; margin-top: 8px; display: none;">You're on the list! Thank you for protecting your Mindspace.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let selectedText = [];
+
+    function toggleOption(btn) {
+      const text = btn.getAttribute('data-text');
+      if (btn.classList.contains('selected')) {
+        btn.classList.remove('selected');
+        selectedText = selectedText.filter(t => t !== text);
+      } else {
+        if (selectedText.length < 3) {
+          btn.classList.add('selected');
+          selectedText.push(text);
+        }
+      }
+    }
+
+    function goToStep(stepNum) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById(`step-${stepNum}`).classList.add('active');
+    }
+
+    function playChimeSound() {
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const now = audioCtx.currentTime;
+      
+      const freqs = [523.25, 659.25, 783.99]; 
+      freqs.forEach((f, i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f, now + (i * 0.08));
+        
+        gain.gain.setValueAtTime(0.2, now + (i * 0.08));
+        gain.gain.exponentialRampToValueAtTime(0.001, now + (i * 0.08) + 0.5);
+        
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        osc.start(now + (i * 0.08));
+        osc.stop(now + (i * 0.08) + 0.5);
+      });
+    }
+
+    function getBestNaturalVoice() {
+      const voices = window.speechSynthesis.getVoices();
+      const naturalVoice = voices.find(v => 
+        v.lang.startsWith('en') && 
+        (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Enhanced') || v.name.includes('Premium'))
+      );
+      if (naturalVoice) return naturalVoice;
+      return voices.find(v => v.lang.startsWith('en')) || null;
+    }
+
+    if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = getBestNaturalVoice;
+    }
+
+    function startFullAudioSession() {
+      if (selectedText.length === 0) {
+        selectedText = [
+          "getting lunch with friends",
+          "enjoying an afternoon coffee break"
+        ];
+      }
+
+      goToStep(3);
+
+      const scriptText = `Close your eyes and breathe slowly. Picture yourself enjoying your ideal peaceful Saturday afternoon. You are experiencing ${selectedText.join(', and then ')}. Everything feels completely quiet, peaceful, and entirely under your control...`;
+
+      const synth = window.speechSynthesis;
+      synth.cancel(); 
+
+      const utterance = new SpeechSynthesisUtterance(scriptText);
+      const bestVoice = getBestNaturalVoice();
+      if (bestVoice) utterance.voice = bestVoice;
+      
+      utterance.rate = 0.82;
+      utterance.pitch = 0.95;
+
+      utterance.onend = function() {
+        setTimeout(() => {
+          playChimeSound();
+
+          setTimeout(() => {
+            synth.cancel();
+            const penguinSpeech = new SpeechSynthesisUtterance("Penguin!");
+            if (bestVoice) penguinSpeech.voice = bestVoice;
+            penguinSpeech.rate = 1.0;
+            
+            penguinSpeech.onend = function() {
+              setTimeout(() => {
+                synth.cancel();
+                const openEyesSpeech = new SpeechSynthesisUtterance("Open your eyes!");
+                if (bestVoice) openEyesSpeech.voice = bestVoice;
+                openEyesSpeech.rate = 1.0;
+                synth.speak(openEyesSpeech);
+
+                document.getElementById('penguin-overlay').classList.add('show');
+              }, 5000);
+            };
+
+            synth.speak(penguinSpeech);
+          }, 400);
+        }, 50
