@@ -213,7 +213,6 @@
     .breakdown-card h4 { color: var(--accent-blue); margin-bottom: 6px; }
     .breakdown-card p { font-size: 0.95rem; margin-bottom: 0; }
 
-    /* CLEAN FULL-WIDTH STACK FOR EMAIL FORM */
     .input-group { 
       display: flex; 
       flex-direction: column;
@@ -259,7 +258,10 @@
     }
 
     function goToStep(stepNum) {
-      document.querySelectorAll('.step').forEach(function(s) { s.classList.remove('active'); });
+      var steps = document.querySelectorAll('.step');
+      if (steps) {
+        steps.forEach(function(s) { s.classList.remove('active'); });
+      }
       var nextStep = document.getElementById('step-' + stepNum);
       if (nextStep) nextStep.classList.add('active');
     }
@@ -277,4 +279,164 @@
           gain.gain.setValueAtTime(0.2, now + (i * 0.08));
           gain.gain.exponentialRampToValueAtTime(0.001, now + (i * 0.08) + 0.5);
           osc.connect(gain);
-          gain.connect(audio
+          gain.connect(audioCtx.destination);
+          osc.start(now + (i * 0.08));
+          osc.stop(now + (i * 0.08) + 0.5);
+        });
+      } catch (e) {
+        console.log("Audio play blocked");
+      }
+    }
+
+    function getVoiceProfile(profileType) {
+      if (typeof window.speechSynthesis === 'undefined') return null;
+      var voices = window.speechSynthesis.getVoices();
+      var englishVoices = voices.filter(function(v) { return v.lang.startsWith('en'); });
+
+      if (profileType === 'calm') {
+        return englishVoices.find(function(v) { 
+          return v.name.includes('Natural') || 
+                 v.name.includes('Enhanced') || 
+                 v.name.includes('Premium') || 
+                 v.name.includes('Google US English') ||
+                 v.name.includes('Samantha');
+        }) || englishVoices[0] || null;
+      } else if (profileType === 'alert') {
+        return englishVoices.find(function(v) { 
+          return v.name.includes('Daniel') || 
+                 v.name.includes('Fred') || 
+                 v.name.includes('Alex') || 
+                 v.name.includes('System');
+        }) || englishVoices[englishVoices.length - 1] || null;
+      }
+      return null;
+    }
+
+    if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = function() { getVoiceProfile('calm'); };
+    }
+
+    function startFullAudioSession() {
+      if (selectedText.length === 0) {
+        selectedText = [
+          "getting lunch with friends",
+          "enjoying an afternoon coffee break"
+        ];
+      }
+
+      goToStep(3);
+
+      var scriptText = "Close your eyes and breathe slowly. Picture yourself enjoying your ideal peaceful Saturday afternoon. You are experiencing " + selectedText.join(', and then ') + ". Everything feels completely quiet, peaceful, and entirely under your control...";
+
+      if (typeof window.speechSynthesis !== 'undefined') {
+        var synth = window.speechSynthesis;
+        synth.cancel(); 
+
+        var utterance = new SpeechSynthesisUtterance(scriptText);
+        var calmVoice = getVoiceProfile('calm');
+        if (calmVoice) utterance.voice = calmVoice;
+        
+        utterance.rate = 0.82;
+        utterance.pitch = 0.95;
+
+        utterance.onend = function() {
+          setTimeout(function() {
+            synth.cancel();
+            
+            var alertVoice = getVoiceProfile('alert');
+            var penguinSpeech = new SpeechSynthesisUtterance("Penguin!");
+            if (alertVoice) penguinSpeech.voice = alertVoice;
+            penguinSpeech.rate = 1.1;
+            penguinSpeech.pitch = 1.2;
+            
+            penguinSpeech.onend = function() {
+              setTimeout(function() {
+                synth.cancel();
+                var openEyesSpeech = new SpeechSynthesisUtterance("Open your eyes!");
+                if (alertVoice) openEyesSpeech.voice = alertVoice;
+                openEyesSpeech.rate = 1.0;
+                synth.speak(openEyesSpeech);
+
+                document.getElementById('penguin-overlay').classList.add('show');
+              }, 5000);
+            };
+
+            synth.speak(penguinSpeech);
+          }, 400);
+        };
+
+        synth.speak(utterance);
+      } else {
+        setTimeout(function() {
+          document.getElementById('penguin-overlay').classList.add('show');
+        }, 6000);
+      }
+    }
+
+    function triggerTrap(choice) {
+      if (typeof window.speechSynthesis !== 'undefined') {
+        window.speechSynthesis.cancel();
+      }
+
+      if (choice === 'accept') {
+        document.getElementById('penguin-overlay').classList.remove('show');
+        goToStep(4);
+      } else if (choice === 'decline') {
+        trapAttempts++;
+        
+        var synth = window.speechSynthesis;
+        var alertVoice = getVoiceProfile('alert');
+        var repeatAlert = new SpeechSynthesisUtterance("Mindspace Interrupted Again!");
+        if (alertVoice) repeatAlert.voice = alertVoice;
+        repeatAlert.rate = 1.1;
+        synth.speak(repeatAlert);
+
+        document.getElementById('overlay-title').innerText = "STILL TRAPPED!";
+        document.getElementById('overlay-desc').innerText = "You declined, but notification loops keep taking your attention (Attempt #" + trapAttempts + ").";
+        document.getElementById('overlay-prompt').innerText = "You cannot escape digital traps by ignoring them. Ready to see how your focus was stolen?";
+      }
+    }
+
+    function submitEmail() {
+      var email = document.getElementById('emailInput').value;
+      if (email) {
+        document.getElementById('thankyou-msg').style.display = 'block';
+        document.getElementById('emailInput').value = '';
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- PAGE 1: Multi-Segment Baseline Selection -->
+    <div id="step-1" class="step active">
+      <h2>2-Minute Mindspace Exercise</h2>
+      <p>Select 2 or 3 activities that best define your ideal peaceful Saturday afternoon:</p>
+      
+      <div class="options-grid">
+        <button class="option-btn" data-text="getting lunch with friends" onclick="toggleOption(this)">
+          🥪 Getting lunch with friends
+        </button>
+        <button class="option-btn" data-text="enjoying an afternoon coffee break" onclick="toggleOption(this)">
+          ☕ Enjoying an afternoon coffee break
+        </button>
+        <button class="option-btn" data-text="an uninterrupted gaming session" onclick="toggleOption(this)">
+          🎮 An uninterrupted gaming session
+        </button>
+        <button class="option-btn" data-text="reading a book in warm sunlight" onclick="toggleOption(this)">
+          📖 Reading a book in warm sunlight
+        </button>
+      </div>
+
+      <button class="primary-btn" onclick="goToStep(2)">Lock In Choices & Calibrate Audio</button>
+    </div>
+
+    <!-- PAGE 2: Audio Calibration -->
+    <div id="step-2" class="step">
+      <h2>Audio Calibration</h2>
+      <p>This exercise uses personalized audio narration based on your selected activities. Please adjust your volume or put on headphones.</p>
+      
+      <div style="background: #0f172a; padding: 16px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
+        <p style="margin-bottom: 12px; font-size: 0
