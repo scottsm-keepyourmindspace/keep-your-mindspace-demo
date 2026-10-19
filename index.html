@@ -283,11 +283,11 @@
     <!-- PENGUIN TEST DISTRACTION OVERLAY -->
     <div id="penguin-overlay" class="overlay">
       <div class="penguin-badge">🐧</div>
-      <h2 style="color: var(--warning-red);">PENGUIN!</h2>
-      <p style="color: #f8fafc; font-size: 0.9rem;">Your train of thought was just interrupted by an external stimulus.</p>
+      <h2 id="overlay-title" style="color: var(--warning-red);">PENGUIN!</h2>
+      <p id="overlay-desc" style="color: #f8fafc; font-size: 0.9rem;">Your train of thought was just interrupted by an external stimulus.</p>
       
       <div class="dark-pattern-box">
-        <p style="font-size: 0.9rem; margin-bottom: 12px; color: var(--text-main);">Did the penguin join your Saturday afternoon activities? Learn more now.</p>
+        <p id="overlay-prompt" style="font-size: 0.9rem; margin-bottom: 12px; color: var(--text-main);">Did the penguin join your Saturday afternoon activities? Learn more now.</p>
         <button class="btn-trick-accept" onclick="triggerTrap('accept')">Learn how you lost your mindspace</button>
         <button class="btn-trick-decline" onclick="triggerTrap('decline')">No thanks, I prefer losing my mindspace</button>
       </div>
@@ -316,7 +316,7 @@
       <div style="margin-top: 24px;">
         <h3 style="font-size: 1.1rem; margin-bottom: 8px;">Tech is a Tool</h3>
         <div class="input-group">
-          <input type="email" placeholder="Enter your email for early waitlist access..." id="emailInput">
+          <input type="email" placeholder="Enter your email for early waitlist access & 7-day recall..." id="emailInput">
           <button class="primary-btn" style="width: auto;" onclick="submitEmail()">Keep My Mindspace</button>
         </div>
         <p id="thankyou-msg" style="color: var(--success-green); font-size: 0.85rem; margin-top: 8px; display: none;">You're on the list! Thank you for protecting your Mindspace.</p>
@@ -327,6 +327,7 @@
 
   <script>
     let selectedText = [];
+    let trapAttempts = 0;
 
     function toggleOption(btn) {
       const text = btn.getAttribute('data-text');
@@ -365,23 +366,39 @@
           osc.stop(now + (i * 0.08) + 0.5);
         });
       } catch (e) {
-        console.log("Audio play blocked or unsupported");
+        console.log("Audio play blocked");
       }
     }
 
-    function getBestNaturalVoice() {
+    // VOICE SELECTION ENGINE: Dynamically switches between warm natural voice and cold system voice
+    function getVoiceProfile(profileType) {
       if (typeof window.speechSynthesis === 'undefined') return null;
       const voices = window.speechSynthesis.getVoices();
-      const naturalVoice = voices.find(v => 
-        v.lang.startsWith('en') && 
-        (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Enhanced') || v.name.includes('Premium'))
-      );
-      if (naturalVoice) return naturalVoice;
-      return voices.find(v => v.lang.startsWith('en')) || null;
+      const englishVoices = voices.filter(v => v.lang.startsWith('en'));
+
+      if (profileType === 'calm') {
+        // Natural, warm, human-sounding voice for guided visualization
+        return englishVoices.find(v => 
+          v.name.includes('Natural') || 
+          v.name.includes('Enhanced') || 
+          v.name.includes('Premium') || 
+          v.name.includes('Google US English') ||
+          v.name.includes('Samantha')
+        ) || englishVoices[0] || null;
+      } else if (profileType === 'alert') {
+        // Sharper, distinct system voice for the interrupt trigger and dark pattern traps
+        return englishVoices.find(v => 
+          v.name.includes('Daniel') || 
+          v.name.includes('Fred') || 
+          v.name.includes('Alex') || 
+          v.name.includes('System')
+        ) || englishVoices[englishVoices.length - 1] || null;
+      }
+      return null;
     }
 
     if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
-      speechSynthesis.onvoiceschanged = getBestNaturalVoice;
+      speechSynthesis.onvoiceschanged = () => getVoiceProfile('calm');
     }
 
     function startFullAudioSession() {
@@ -401,8 +418,8 @@
         synth.cancel(); 
 
         const utterance = new SpeechSynthesisUtterance(scriptText);
-        const bestVoice = getBestNaturalVoice();
-        if (bestVoice) utterance.voice = bestVoice;
+        const calmVoice = getVoiceProfile('calm');
+        if (calmVoice) utterance.voice = calmVoice;
         
         utterance.rate = 0.82;
         utterance.pitch = 0.95;
@@ -413,15 +430,19 @@
 
             setTimeout(() => {
               synth.cancel();
+              
+              // Dynamic Voice Switch: Shift to sharp alert voice for "Penguin!"
+              const alertVoice = getVoiceProfile('alert');
               const penguinSpeech = new SpeechSynthesisUtterance("Penguin!");
-              if (bestVoice) penguinSpeech.voice = bestVoice;
-              penguinSpeech.rate = 1.0;
+              if (alertVoice) penguinSpeech.voice = alertVoice;
+              penguinSpeech.rate = 1.1;
+              penguinSpeech.pitch = 1.2;
               
               penguinSpeech.onend = function() {
                 setTimeout(() => {
                   synth.cancel();
                   const openEyesSpeech = new SpeechSynthesisUtterance("Open your eyes!");
-                  if (bestVoice) openEyesSpeech.voice = bestVoice;
+                  if (alertVoice) openEyesSpeech.voice = alertVoice;
                   openEyesSpeech.rate = 1.0;
                   synth.speak(openEyesSpeech);
 
@@ -436,7 +457,6 @@
 
         synth.speak(utterance);
       } else {
-        // Fallback for browsers with SpeechSynthesis disabled
         setTimeout(() => {
           document.getElementById('penguin-overlay').classList.add('show');
         }, 6000);
@@ -447,8 +467,25 @@
       if (typeof window.speechSynthesis !== 'undefined') {
         window.speechSynthesis.cancel();
       }
-      document.getElementById('penguin-overlay').classList.remove('show');
-      goToStep(4);
+
+      if (choice === 'accept') {
+        document.getElementById('penguin-overlay').classList.remove('show');
+        goToStep(4);
+      } else if (choice === 'decline') {
+        trapAttempts++;
+        playChimeSound();
+        
+        const synth = window.speechSynthesis;
+        const alertVoice = getVoiceProfile('alert');
+        const repeatAlert = new SpeechSynthesisUtterance("Mindspace Interrupted Again!");
+        if (alertVoice) repeatAlert.voice = alertVoice;
+        repeatAlert.rate = 1.1;
+        synth.speak(repeatAlert);
+
+        document.getElementById('overlay-title').innerText = "STILL TRAPPED!";
+        document.getElementById('overlay-desc').innerText = `You declined, but notification loops keep taking your attention (Attempt #${trapAttempts}).`;
+        document.getElementById('overlay-prompt').innerText = "You cannot escape digital traps by ignoring them. Ready to see how your focus was stolen?";
+      }
     }
 
     function submitEmail() {
