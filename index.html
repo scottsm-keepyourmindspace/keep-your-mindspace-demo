@@ -218,7 +218,7 @@
       display: flex; 
       flex-direction: column;
       gap: 12px; 
-      margin-top: 16px; 
+      margin-top: 12px; 
       width: 100%;
     }
 
@@ -241,7 +241,6 @@
     }
   </style>
 
-  <!-- JAVASCRIPT LOADED IN HEAD TO PREVENT REFERENCE ERRORS -->
   <script>
     var selectedText = [];
     var trapAttempts = 0;
@@ -469,15 +468,7 @@
 
       <div style="margin-top: 24px;">
         <h3 style="font-size: 1.1rem; margin-bottom: 4px;">Tech is a Tool</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">Join the waitlist and receive a 7-day follow-up to track your Mindspace defense:</p>
         <div class="input-group">
-          <input type="email" placeholder="Enter your email for early waitlist access & 7-day recall..." id="emailInput">
-          <button class="primary-btn" onclick="submitEmail()">Keep My Mindspace</button>
-        </div>
-        <p id="thankyou-msg" style="color: var(--success-green); font-size: 0.85rem; margin-top: 8px; display: none;">You're on the list! Thank you for protecting your Mindspace.</p>
-      </div>
-    </div>
-
-  </div>
-
-</body>
-</html>
+          <input type="email" placeholder="Enter your email address..." id="emailInput">
+          <button
