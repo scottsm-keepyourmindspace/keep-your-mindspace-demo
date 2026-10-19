@@ -212,15 +212,41 @@
     .breakdown-card h4 { color: var(--accent-blue); margin-bottom: 6px; }
     .breakdown-card p { font-size: 0.95rem; margin-bottom: 0; }
 
-    .input-group { display: flex; gap: 8px; margin-top: 16px; }
+    /* RESPONSIVE EMAIL FORM FIX */
+    .input-group { 
+      display: flex; 
+      flex-direction: column;
+      gap: 10px; 
+      margin-top: 16px; 
+      width: 100%;
+    }
+
     .input-group input {
-      flex: 1;
-      padding: 12px;
+      width: 100%;
+      padding: 14px 12px;
       border-radius: 8px;
       border: 1px solid #334155;
       background: #0f172a;
       color: #fff;
-      font-size: 0.95rem;
+      font-size: 0.85rem;
+    }
+
+    .input-group input::placeholder {
+      color: #64748b;
+      font-size: 0.82rem;
+    }
+
+    @media (min-width: 520px) {
+      .input-group {
+        flex-direction: row;
+      }
+      .input-group input {
+        flex: 1;
+      }
+      .input-group button {
+        width: auto !important;
+        white-space: nowrap;
+      }
     }
   </style>
 </head>
@@ -314,10 +340,11 @@
       </div>
 
       <div style="margin-top: 24px;">
-        <h3 style="font-size: 1.1rem; margin-bottom: 8px;">Tech is a Tool</h3>
+        <h3 style="font-size: 1.1rem; margin-bottom: 4px;">Tech is a Tool</h3>
+        <p style="font-size: 0.85rem; margin-bottom: 12px;">Sign up for early waitlist access and 7-day behavior recall updates:</p>
         <div class="input-group">
-          <input type="email" placeholder="Enter your email for early waitlist access & 7-day recall..." id="emailInput">
-          <button class="primary-btn" style="width: auto;" onclick="submitEmail()">Keep My Mindspace</button>
+          <input type="email" placeholder="Enter your email address..." id="emailInput">
+          <button class="primary-btn" onclick="submitEmail()">Keep My Mindspace</button>
         </div>
         <p id="thankyou-msg" style="color: var(--success-green); font-size: 0.85rem; margin-top: 8px; display: none;">You're on the list! Thank you for protecting your Mindspace.</p>
       </div>
@@ -370,14 +397,12 @@
       }
     }
 
-    // VOICE SELECTION ENGINE: Dynamically switches between warm natural voice and cold system voice
     function getVoiceProfile(profileType) {
       if (typeof window.speechSynthesis === 'undefined') return null;
       const voices = window.speechSynthesis.getVoices();
       const englishVoices = voices.filter(v => v.lang.startsWith('en'));
 
       if (profileType === 'calm') {
-        // Natural, warm, human-sounding voice for guided visualization
         return englishVoices.find(v => 
           v.name.includes('Natural') || 
           v.name.includes('Enhanced') || 
@@ -386,7 +411,6 @@
           v.name.includes('Samantha')
         ) || englishVoices[0] || null;
       } else if (profileType === 'alert') {
-        // Sharper, distinct system voice for the interrupt trigger and dark pattern traps
         return englishVoices.find(v => 
           v.name.includes('Daniel') || 
           v.name.includes('Fred') || 
@@ -431,7 +455,6 @@
             setTimeout(() => {
               synth.cancel();
               
-              // Dynamic Voice Switch: Shift to sharp alert voice for "Penguin!"
               const alertVoice = getVoiceProfile('alert');
               const penguinSpeech = new SpeechSynthesisUtterance("Penguin!");
               if (alertVoice) penguinSpeech.voice = alertVoice;
