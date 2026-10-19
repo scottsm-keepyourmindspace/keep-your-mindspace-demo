@@ -212,41 +212,31 @@
     .breakdown-card h4 { color: var(--accent-blue); margin-bottom: 6px; }
     .breakdown-card p { font-size: 0.95rem; margin-bottom: 0; }
 
-    /* RESPONSIVE EMAIL FORM FIX */
+    /* CLEAN FULL-WIDTH STACK FOR EMAIL FORM */
     .input-group { 
       display: flex; 
       flex-direction: column;
-      gap: 10px; 
+      gap: 12px; 
       margin-top: 16px; 
       width: 100%;
     }
 
     .input-group input {
       width: 100%;
-      padding: 14px 12px;
+      padding: 14px 16px;
       border-radius: 8px;
       border: 1px solid #334155;
       background: #0f172a;
       color: #fff;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
     }
 
     .input-group input::placeholder {
       color: #64748b;
-      font-size: 0.82rem;
     }
 
-    @media (min-width: 520px) {
-      .input-group {
-        flex-direction: row;
-      }
-      .input-group input {
-        flex: 1;
-      }
-      .input-group button {
-        width: auto !important;
-        white-space: nowrap;
-      }
+    .input-group button {
+      width: 100%;
     }
   </style>
 </head>
@@ -281,11 +271,6 @@
     <div id="step-2" class="step">
       <h2>Audio Calibration</h2>
       <p>This exercise uses personalized audio narration based on your selected activities. Please adjust your volume or put on headphones.</p>
-      
-      <div style="background: #0f172a; padding: 16px; border-radius: 10px; margin-bottom: 20px; text-align: center;">
-        <p style="margin-bottom: 12px; font-size: 0.9rem;">Test your audio volume below:</p>
-        <button class="option-btn" style="text-align: center; width: auto; display: inline-block;" onclick="playChimeSound()">🔊 Play Sample Audio Chime</button>
-      </div>
 
       <p style="font-size: 0.9rem; color: var(--accent-blue);">When ready, click below, close your eyes, and listen to the guided relaxation.</p>
       <button class="primary-btn" onclick="startFullAudioSession()">I'm Ready — Start Guided Relaxation</button>
@@ -313,211 +298,4 @@
       <p id="overlay-desc" style="color: #f8fafc; font-size: 0.9rem;">Your train of thought was just interrupted by an external stimulus.</p>
       
       <div class="dark-pattern-box">
-        <p id="overlay-prompt" style="font-size: 0.9rem; margin-bottom: 12px; color: var(--text-main);">Did the penguin join your Saturday afternoon activities? Learn more now.</p>
-        <button class="btn-trick-accept" onclick="triggerTrap('accept')">Learn how you lost your mindspace</button>
-        <button class="btn-trick-decline" onclick="triggerTrap('decline')">No thanks, I prefer losing my mindspace</button>
-      </div>
-    </div>
-
-    <!-- PAGE 4: The Unveil & Keep Your Mindspace CTA -->
-    <div id="step-4" class="step">
-      <h2 style="color: var(--accent-blue);">Keep Your Mindspace.</h2>
-      <p>While your eyes were closed, a sudden audio alert completely broke your peaceful visualization and rerouted your focus.</p>
-
-      <div class="breakdown-card">
-        <h4>1. The Audio Interruption (Penguin Trigger)</h4>
-        <p>A loud, unexpected sound and spoken alert snapped you out of a peaceful state, demonstrating how digital notifications hijack auditory and mental focus in real time.</p>
-      </div>
-
-      <div class="breakdown-card">
-        <h4>2. The Choice Architecture (Manipulative Design)</h4>
-        <p>When you opened your eyes, the primary button used bright glow and high contrast to steer your click, while opting out was hidden behind faded micro-text ("I prefer losing my mindspace").</p>
-      </div>
-
-      <div class="breakdown-card" style="border-left-color: var(--success-green);">
-        <h4>3. Empowering Agency (Your Defense)</h4>
-        <p>Empowering young adults and parents to protect their attention from manipulative digital design.</p>
-      </div>
-
-      <div style="margin-top: 24px;">
-        <h3 style="font-size: 1.1rem; margin-bottom: 4px;">Tech is a Tool</h3>
-        <p style="font-size: 0.85rem; margin-bottom: 12px;">Sign up for early waitlist access and 7-day behavior recall updates:</p>
-        <div class="input-group">
-          <input type="email" placeholder="Enter your email address..." id="emailInput">
-          <button class="primary-btn" onclick="submitEmail()">Keep My Mindspace</button>
-        </div>
-        <p id="thankyou-msg" style="color: var(--success-green); font-size: 0.85rem; margin-top: 8px; display: none;">You're on the list! Thank you for protecting your Mindspace.</p>
-      </div>
-    </div>
-
-  </div>
-
-  <script>
-    let selectedText = [];
-    let trapAttempts = 0;
-
-    function toggleOption(btn) {
-      const text = btn.getAttribute('data-text');
-      if (btn.classList.contains('selected')) {
-        btn.classList.remove('selected');
-        selectedText = selectedText.filter(t => t !== text);
-      } else {
-        if (selectedText.length < 3) {
-          btn.classList.add('selected');
-          selectedText.push(text);
-        }
-      }
-    }
-
-    function goToStep(stepNum) {
-      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-      const nextStep = document.getElementById(`step-${stepNum}`);
-      if (nextStep) nextStep.classList.add('active');
-    }
-
-    function playChimeSound() {
-      try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const now = audioCtx.currentTime;
-        const freqs = [523.25, 659.25, 783.99]; 
-        freqs.forEach((f, i) => {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(f, now + (i * 0.08));
-          gain.gain.setValueAtTime(0.2, now + (i * 0.08));
-          gain.gain.exponentialRampToValueAtTime(0.001, now + (i * 0.08) + 0.5);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(now + (i * 0.08));
-          osc.stop(now + (i * 0.08) + 0.5);
-        });
-      } catch (e) {
-        console.log("Audio play blocked");
-      }
-    }
-
-    function getVoiceProfile(profileType) {
-      if (typeof window.speechSynthesis === 'undefined') return null;
-      const voices = window.speechSynthesis.getVoices();
-      const englishVoices = voices.filter(v => v.lang.startsWith('en'));
-
-      if (profileType === 'calm') {
-        return englishVoices.find(v => 
-          v.name.includes('Natural') || 
-          v.name.includes('Enhanced') || 
-          v.name.includes('Premium') || 
-          v.name.includes('Google US English') ||
-          v.name.includes('Samantha')
-        ) || englishVoices[0] || null;
-      } else if (profileType === 'alert') {
-        return englishVoices.find(v => 
-          v.name.includes('Daniel') || 
-          v.name.includes('Fred') || 
-          v.name.includes('Alex') || 
-          v.name.includes('System')
-        ) || englishVoices[englishVoices.length - 1] || null;
-      }
-      return null;
-    }
-
-    if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
-      speechSynthesis.onvoiceschanged = () => getVoiceProfile('calm');
-    }
-
-    function startFullAudioSession() {
-      if (selectedText.length === 0) {
-        selectedText = [
-          "getting lunch with friends",
-          "enjoying an afternoon coffee break"
-        ];
-      }
-
-      goToStep(3);
-
-      const scriptText = `Close your eyes and breathe slowly. Picture yourself enjoying your ideal peaceful Saturday afternoon. You are experiencing ${selectedText.join(', and then ')}. Everything feels completely quiet, peaceful, and entirely under your control...`;
-
-      if (typeof window.speechSynthesis !== 'undefined') {
-        const synth = window.speechSynthesis;
-        synth.cancel(); 
-
-        const utterance = new SpeechSynthesisUtterance(scriptText);
-        const calmVoice = getVoiceProfile('calm');
-        if (calmVoice) utterance.voice = calmVoice;
-        
-        utterance.rate = 0.82;
-        utterance.pitch = 0.95;
-
-        utterance.onend = function() {
-          setTimeout(() => {
-            playChimeSound();
-
-            setTimeout(() => {
-              synth.cancel();
-              
-              const alertVoice = getVoiceProfile('alert');
-              const penguinSpeech = new SpeechSynthesisUtterance("Penguin!");
-              if (alertVoice) penguinSpeech.voice = alertVoice;
-              penguinSpeech.rate = 1.1;
-              penguinSpeech.pitch = 1.2;
-              
-              penguinSpeech.onend = function() {
-                setTimeout(() => {
-                  synth.cancel();
-                  const openEyesSpeech = new SpeechSynthesisUtterance("Open your eyes!");
-                  if (alertVoice) openEyesSpeech.voice = alertVoice;
-                  openEyesSpeech.rate = 1.0;
-                  synth.speak(openEyesSpeech);
-
-                  document.getElementById('penguin-overlay').classList.add('show');
-                }, 5000);
-              };
-
-              synth.speak(penguinSpeech);
-            }, 400);
-          }, 500);
-        };
-
-        synth.speak(utterance);
-      } else {
-        setTimeout(() => {
-          document.getElementById('penguin-overlay').classList.add('show');
-        }, 6000);
-      }
-    }
-
-    function triggerTrap(choice) {
-      if (typeof window.speechSynthesis !== 'undefined') {
-        window.speechSynthesis.cancel();
-      }
-
-      if (choice === 'accept') {
-        document.getElementById('penguin-overlay').classList.remove('show');
-        goToStep(4);
-      } else if (choice === 'decline') {
-        trapAttempts++;
-        playChimeSound();
-        
-        const synth = window.speechSynthesis;
-        const alertVoice = getVoiceProfile('alert');
-        const repeatAlert = new SpeechSynthesisUtterance("Mindspace Interrupted Again!");
-        if (alertVoice) repeatAlert.voice = alertVoice;
-        repeatAlert.rate = 1.1;
-        synth.speak(repeatAlert);
-
-        document.getElementById('overlay-title').innerText = "STILL TRAPPED!";
-        document.getElementById('overlay-desc').innerText = `You declined, but notification loops keep taking your attention (Attempt #${trapAttempts}).`;
-        document.getElementById('overlay-prompt').innerText = "You cannot escape digital traps by ignoring them. Ready to see how your focus was stolen?";
-      }
-    }
-
-    function submitEmail() {
-      const email = document.getElementById('emailInput').value;
-      if (email) {
-        document.getElementById('thankyou-msg').style.display = 'block';
-        document.getElementById('emailInput').value = '';
-      }
-    }
-  </script>
-</body>
-</html>
+        <p id="overlay-prompt" style="font-size: 0.9rem; margin-bottom: 12px; color
